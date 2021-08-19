@@ -29,7 +29,7 @@ def meta_analysis(input_json, output_dir):
     try:
         with open(input_json, 'r') as injson:
             json_data = json.load(injson)
-    except:
+    except Exception:
         sys.exit(f'Failed to load input json file: {input_json}')
     else:
         if json_data['audios'] is not None:
@@ -48,14 +48,12 @@ def meta_analysis(input_json, output_dir):
                         duration = long_audio['duration']
                         assert (os.path.exists(long_audio_path))
                     except AssertionError:
-                        print(
-                            f'Warning: {aid} something is wrong, maybe AssertionError, skipped'
-                        )
+                        print(f'''Warning: {aid} something is wrong,
+                                  maybe AssertionError, skipped''')
                         continue
-                    except:
-                        print(
-                            f'Warning: {aid} something is wrong, maybe the error path: {long_audio_path}, skipped'
-                        )
+                    except Exception:
+                        print(f'''Warning: {aid} something is wrong, maybe the
+                                  error path: {long_audio_path}, skipped''')
                         continue
                     else:
                         wavscp.write(f'{aid}\t{long_audio_path}\n')
@@ -68,10 +66,9 @@ def meta_analysis(input_json, output_dir):
                                 dur = end_time - start_time
                                 text = segment_file['text']
                                 segment_subsets = segment_file["subsets"]
-                            except:
-                                print(
-                                    f'Warning: {segment_file} something is wrong, skipped'
-                                )
+                            except Exception:
+                                print(f'''Warning: {segment_file} something
+                                          is wrong, skipped''')
                                 continue
                             else:
                                 utt2text.write(f'{sid}\t{text}\n')
