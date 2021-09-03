@@ -1,6 +1,18 @@
 # Copyright 2021  Xiaomi Corporation (Author: Yongqing Wang)
 #                 Mobvoi Inc(Author: Di Wu, Binbin Zhang)
 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
 import os
 import argparse
@@ -9,11 +21,11 @@ import json
 
 def get_args():
     parser = argparse.ArgumentParser(description="""
-      This script is used to process raw json dataset of GigaSpeech,
+      This script is used to process raw json dataset of WenetSpeech,
       where the long wav is splitinto segments and
       data of wenet format is generated.
       """)
-    parser.add_argument('input_json', help="""Input json file of Gigaspeech""")
+    parser.add_argument('input_json', help="""Input json file of WenetSpeech""")
     parser.add_argument('output_dir', help="""Output dir for prepared data""")
 
     args = parser.parse_args()
@@ -79,7 +91,6 @@ def meta_analysis(input_json, output_dir):
                                 segment_sub_names = " ".join(segment_subsets)
                                 utt2subsets.write(
                                     f'{sid}\t{segment_sub_names}\n')
-
 
 def main():
     args = get_args()

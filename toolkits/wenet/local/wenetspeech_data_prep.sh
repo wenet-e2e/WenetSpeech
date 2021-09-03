@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
+
 # Copyright 2021  Xiaomi Corporation (Author: Yongqing Wang)
 #                 Seasalt AI, Inc (Author: Guoguo Chen)
 #                 Mobvoi Inc(Author: Di Wu, Binbin Zhang)
+#                 NPU, ASLP Group (Author: Qijie Shao)
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 set -e
 set -o pipefail
@@ -10,7 +24,7 @@ stage=1
 prefix=
 train_subset=L
 
-. ./utils/parse_options.sh || exit 1;
+. ./tools/parse_options.sh || exit 1;
 
 filter_by_id () {
   idlist=$1
@@ -62,9 +76,7 @@ if [ $# -ne 2 ]; then
   echo ""
   echo "This script takes the WenetSpeech source directory, and prepares the"
   echo "WeNet format data directory."
-  echo "  --garbage-utterance-tags <tags>  # Tags for non-speech."
   echo "  --prefix <prefix>                # Prefix for output data directory."
-  echo "  --punctuation-tags <tags>        # Tags for punctuations."
   echo "  --stage <stage>                  # Processing stage."
   echo "  --train-subset <L|M|S|W>     # Train subset to be created."
   exit 1
@@ -98,8 +110,8 @@ if [ $stage -le 1 ]; then
 
   # Files to be created:
   # wav.scp text segments utt2dur
-  python3 toolkits/wenet/extract_meta.py \
-     $wenetspeech_dir/WenetSpeech.json $corpus_dir | exit 1;
+  python3 local/extract_meta.py \
+    $wenetspeech_dir/WenetSpeech.json $corpus_dir || exit 1;
 fi
 
 if [ $stage -le 2 ]; then
