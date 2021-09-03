@@ -92,7 +92,6 @@ def meta_analysis(input_json, output_dir):
                                 utt2subsets.write(
                                     f'{sid}\t{segment_sub_names}\n')
 
-
 def main():
     args = get_args()
 

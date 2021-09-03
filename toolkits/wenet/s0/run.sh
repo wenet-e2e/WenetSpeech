@@ -257,4 +257,3 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
         --checkpoint $dir/avg_${average_num}.pt \
         --output_file $dir/final.zip
 fi
-

@@ -92,7 +92,6 @@ def output(output_wav_scp, wav_path_dict, start_time_dict, end_time_dict):
             print("seg wav finished: %d%%" % int(a/step))
         a += 1
     h_wav_scp.close()
-    
 
 def main():
     wav_scp = sys.argv[1]
