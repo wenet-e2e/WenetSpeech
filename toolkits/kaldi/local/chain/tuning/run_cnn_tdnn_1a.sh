@@ -14,7 +14,8 @@ set -euo pipefail
 # First the options that are passed through to run_ivector_common.sh
 # (some of which are also used in this script directly).
 stage=0
-decode_nj=10
+train_nj=50
+decode_nj=50
 train_set=train_all_cleaned
 gmm=tri4a_cleaned
 nnet3_affix=_cleaned
@@ -75,15 +76,19 @@ fi
 # 'train_set' as the 'train_set_sp' dataset.
 
 # Prepare the hires mfcc features and alignment.
-ln -sf $train_set data/${train_set}_sp
-for part in ${train_set}_sp $test_sets; do
-  steps/make_mfcc.sh --nj $train_nj --mfcc-config conf/mfcc_hires.conf \
-    --cmd "$train_cmd" data/${part}_hires || exit 1;
-  steps/compute_cmvn_stats.sh data/${part}_hires || exit 1;
-  utils/fix_data_dir.sh data/${part}_hires
-done
-steps/align_fmllr.sh --stage 0 --nj $train_nj --cmd "$train_cmd" \
-  data/${train_set}_sp data/lang exp/$gmm exp/${gmm}_ali_${train_set}_sp
+if [ $stage -le 10 ]; then
+  ln -sf $train_set data/${train_set}_sp
+  for part in ${train_set}_sp $test_sets; do
+    utils/copy_data_dir.sh data/$part data/${part}_hires
+    steps/make_mfcc.sh --nj $train_nj --mfcc-config conf/mfcc_hires.conf \
+      --cmd "$train_cmd" data/${part}_hires || exit 1;
+    steps/compute_cmvn_stats.sh data/${part}_hires || exit 1;
+    utils/fix_data_dir.sh data/${part}_hires
+  done
+  steps/align_fmllr.sh --stage 0 --nj $train_nj --cmd "$train_cmd" \
+    data/${train_set}_sp data/lang exp/${train_set}/$gmm \
+    exp/${train_set}/${gmm}_ali_${train_set}_sp
+fi
 
 
 gmm_dir=exp/${train_set}/$gmm
@@ -103,7 +108,7 @@ done
 # Please take this as a reference on how to specify all the options of
 # local/chain/run_chain_common.sh
 local/chain/run_chain_common.sh --stage $stage \
-                                --gmm-dir ${train_set}/$gmm_dir \
+                                --gmm-dir $gmm_dir \
                                 --ali-dir $ali_dir \
                                 --lores-train-data-dir ${lores_train_data_dir} \
                                 --lang $lang \
