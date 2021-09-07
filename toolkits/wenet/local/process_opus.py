@@ -16,11 +16,6 @@
 
 # usage: python3 process_opus.py wav.scp segments output_wav.scp
 
-# note: This scipt will create a "audio_seg" directory under
-# the original wenetspeech folder to store the processed audio,
-# please ensure that your disk have sufficient space
-# (the "audio_seg" directory is about 2.1TB).
-
 from pydub import AudioSegment
 import sys
 import os
@@ -72,11 +67,8 @@ def output(output_wav_scp, wav_path_dict, start_time_dict, end_time_dict):
         output_dir = (os.path.dirname(current_wav_path)).replace("audio", 'audio_seg')
         seg_wav_path = os.path.join(output_dir, utt_id + '.wav')
 
-        if not os.path.exists(output_dir):
-            try:
-                os.makedirs(output_dir)
-            except:
-                pass
+        # if not os.path.exists(output_dir):
+        #     os.makedirs(output_dir)
 
         if current_wav_path != previous_wav_path:
             source_wav = AudioSegment.from_file(current_wav_path)
@@ -92,6 +84,7 @@ def output(output_wav_scp, wav_path_dict, start_time_dict, end_time_dict):
             print("seg wav finished: %d%%" % int(a/step))
         a += 1
     h_wav_scp.close()
+
 
 def main():
     wav_scp = sys.argv[1]

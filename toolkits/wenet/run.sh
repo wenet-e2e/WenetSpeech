@@ -8,8 +8,8 @@
 # Use this to control how many gpu you use, It's 1-gpu training if you specify
 # just 1gpu, otherwise it's is multiple gpu training based on DDP in pytorch
 export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
-stage=4 # start from 0 if you need to start from data preparation
-stop_stage=4
+stage=3 # start from 0 if you need to start from data preparation
+stop_stage=3
 
 # The num of nodes or machines used for multi-machine training
 # Default 1 for single machine/node
@@ -22,7 +22,7 @@ node_rank=0
 
 # data
 # use your own data path. You need to download the WenetSpeech dataset by yourself.
-wenetspeech_data_dir=/home/work_nfs5/qjshao/DATA/wenetspeech
+wenetspeech_data_dir=/home/work_nfs4_ssd/qjshao/qjshao_workspace/DATASET/wenetspeech
 
 # WenetSpeech training set
 set=L
@@ -57,15 +57,25 @@ set -o pipefail
 if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
     echo "Data preparation"
     local/wenetspeech_data_prep.sh \
-        --train-subset $set \
-        --stage 1 \
-        $wenetspeech_data_dir \
-        ${wave_data} \
-        || exit 1;
+       --train-subset $set \
+       --stage 1 \
+       $wenetspeech_data_dir \
+       ${wave_data} \
+       || exit 1;
 
     for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2};do
         tmpdir=temp_${RANDOM}
         mkdir $tmpdir
+
+        # note: This scipt will create a "audio_seg" directory under
+        # the original wenetspeech folder to store the processed audio,
+        # please ensure that your disk have sufficient space
+        # (the "audio_seg" directory is about 2.1TB)
+        awk '{print $2}' ${wave_data}/${x}/wav.scp | \
+            sed 's:audio:audio_seg:g' | \
+            while read line; do dirname $line;done | uniq | \
+            while read line; do mkdir -p $line;done
+
         for i in `seq 1 ${nj}`;do
         {
             tools/data/split_scp.pl -j ${nj} ${i} --one-based \
@@ -83,21 +93,22 @@ if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
         for i in `seq 1 ${nj}`;do
             cat $tmpdir/wav.scp.${i} >> ${wave_data}/${x}/wav.scp
         done
+
         rm -rf $tmpdir
     done
 
     for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2};do
-        cp ${wave_data}/${x}/text ${wave_data}/${x}/text.org
+       cp ${wave_data}/${x}/text ${wave_data}/${x}/text.org
 
-        paste -d " " <(cut -f 1 ${wave_data}/${x}/text.org) \
-            <(cut -f 2- ${wave_data}/${x}/text.org | \
-            tr 'a-z' 'A-Z' | \
-            sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
-            sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
-            tr -d " ")\
-        > ${wave_data}/${x}/text
+       paste -d " " <(cut -f 1 ${wave_data}/${x}/text.org) \
+           <(cut -f 2- ${wave_data}/${x}/text.org | \
+           tr 'a-z' 'A-Z' | \
+           sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
+           sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
+           tr -d " ")\
+       > ${wave_data}/${x}/text
 
-        sed -i 's/\xEF\xBB\xBF//' ${wave_data}/${x}/text
+       sed -i 's/\xEF\xBB\xBF//' ${wave_data}/${x}/text
     done
 fi
 
@@ -134,7 +145,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 fi
 
 # Prepare wenet requried data
-if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
+if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then 
     echo "Prepare data, prepare requried format"
     for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2}; do
         tools/format_data.sh \
@@ -257,3 +268,4 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
         --checkpoint $dir/avg_${average_num}.pt \
         --output_file $dir/final.zip
 fi
+
