@@ -145,7 +145,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 fi
 
 # Prepare wenet requried data
-if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then 
+if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     echo "Prepare data, prepare requried format"
     for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2}; do
         tools/format_data.sh \
