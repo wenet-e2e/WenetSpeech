@@ -19,20 +19,16 @@
 from pydub import AudioSegment
 import sys
 import os
-import pdb
 
 def read_file(wav_scp, segments):
     h_wav = open(wav_scp, 'r')
     wav_scp_dict = {}
     for line_str in h_wav:
-        try:
-            if line_str.find("\t") == -1:
-                wav_id, path = line_str.strip().split(" ", 1)
-            else:
-                wav_id, path = line_str.strip().split("\t", 1)
-            wav_scp_dict[wav_id] = path
-        except:
-            continue
+        if line_str.find("\t") == -1:
+            wav_id, path = line_str.strip().split(" ", 1)
+        else:
+            wav_id, path = line_str.strip().split("\t", 1)
+        wav_scp_dict[wav_id] = path
     h_wav.close()
 
     h_seg = open(segments, 'r')
@@ -40,16 +36,13 @@ def read_file(wav_scp, segments):
     start_time_dict = {}
     end_time_dict = {}
     for line_str in h_seg:
-        try:
-            if line_str.find("\t") == -1:
-                utt_id, wav_id, start_time, end_time = line_str.strip().split()
-            else:
-                utt_id, wav_id, start_time, end_time = line_str.strip().split()
-            wav_path_dict[utt_id] = wav_scp_dict[wav_id]
-            start_time_dict[utt_id] = float(start_time)
-            end_time_dict[utt_id] = float(end_time)
-        except:
-            continue
+        if line_str.find("\t") == -1:
+            utt_id, wav_id, start_time, end_time = line_str.strip().split()
+        else:
+            utt_id, wav_id, start_time, end_time = line_str.strip().split()
+        wav_path_dict[utt_id] = wav_scp_dict[wav_id]
+        start_time_dict[utt_id] = float(start_time)
+        end_time_dict[utt_id] = float(end_time)
     h_seg.close()
     return wav_path_dict, start_time_dict, end_time_dict
 
