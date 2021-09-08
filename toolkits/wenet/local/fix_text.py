@@ -17,43 +17,33 @@
 import sys
 import re
 
-def read_text(text):
-    h_t = open(text, 'r')
+def read_text(text_file):
     text_dic = {}
-    for line_str in h_t:
-        utt, text_str = line_str.strip().split(maxsplit=1)
-        text_dic[utt] = text_str
-    h_t.close()
+    with open(text_file, 'r', encoding='UTF-8') as fin:
+        for line_str in fin:
+            utt, text_str = line_str.strip().split(maxsplit=1)
+            text_dic[utt] = text_str
     return text_dic
 
-def fix(text_dic):
-    text_dic_fix = {}
-    for utt, text in text_dic.items():
-        # Lowercase to uppercase
-        text = text.upper()
+def fix_text(text_dic, text_file):
+    with open(text_file, 'w', encoding='UTF-8') as fout:
+        for utt, text in text_dic.items():
+            # Lowercase to uppercase
+            text = text.upper()
 
-        # Replace the spaces between English with ▁
-        text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text)
-        text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text)
+            # Replace the spaces between English with ▁
+            text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text)
+            text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text)
 
-        # Delete other special characters
-        text = re.sub(r"[^\u4e00-\u9fffA-Z0-9▁]", "", text)
+            # Delete other special characters
+            text = re.sub(r"[^\u4e00-\u9fffA-Z0-9▁]", "", text)
 
-        text_dic_fix[utt] = text
-    return text_dic_fix
-
-def output_text(text, text_dic):
-    h_t = open(text, 'w')
-    for utt, text in text_dic.items():
-        h_t.write("{} {}\n".format(utt, text))
-    h_t.close()
+            fout.write("{} {}\n".format(utt, text))
 
 def main():
-    text = sys.argv[1]
-
-    text_dic = read_text(text)
-    text_dic = fix(text_dic)
-    output_text(text, text_dic)
+    text_file = sys.argv[1]
+    text_dic = read_text(text_file)
+    fix_text(text_dic, text_file)
 
 if __name__ == '__main__':
     main()
