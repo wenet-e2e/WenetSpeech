@@ -15,7 +15,6 @@
 # usage: python3 fix_text.py text
 
 import sys
-import os
 import re
 
 def read_text(text):
@@ -33,11 +32,17 @@ def read_text(text):
 def fix(text_dic):
     text_dic_fix = {}
     for utt, text in text_dic.items():
-        text = text.upper() # Lowercase to uppercase
-        text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text) # Replace the spaces between English with ▁
+        # Lowercase to uppercase
+        text = text.upper()
+
+        # Replace the spaces between English with ▁
         text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text)
-        text = re.sub(r"[^\u4e00-\u9fffA-Z0-9▁]", "", text) # Delete other special characters
-        text_dic_fix[utt]=text
+        text = re.sub(r"([A-Z]){1}\s([A-Z]){1}", r"\1▁\2", text)
+
+        # Delete other special characters
+        text = re.sub(r"[^\u4e00-\u9fffA-Z0-9▁]", "", text)
+
+        text_dic_fix[utt] = text
     return text_dic_fix
 
 def output_text(text, text_dic):
@@ -55,4 +60,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
