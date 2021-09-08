@@ -72,9 +72,9 @@ def output(output_wav_scp, wav_path_dict, start_time_dict, end_time_dict):
         target_audio = source_wav[start:end].set_frame_rate(16000)
         target_audio.export(seg_wav_path, format="wav")
 
-        h_wav_scp.write("%s %s\n" % (utt_id, seg_wav_path))
-        if (a != 0) and  (a % step == 0):
-            print("seg wav finished: %d%%" % int(a/step))
+        h_wav_scp.write("{} {}\n".format(utt_id, seg_wav_path))
+        if (a != 0) and (a % step == 0):
+            print("seg wav finished: {}%".format(int(a / step)))
         a += 1
     h_wav_scp.close()
 

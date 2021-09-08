@@ -8,8 +8,8 @@
 # Use this to control how many gpu you use, It's 1-gpu training if you specify
 # just 1gpu, otherwise it's is multiple gpu training based on DDP in pytorch
 export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
-stage=3 # start from 0 if you need to start from data preparation
-stop_stage=3
+stage=4 # start from 0 if you need to start from data preparation
+stop_stage=4
 
 # The num of nodes or machines used for multi-machine training
 # Default 1 for single machine/node
@@ -37,10 +37,10 @@ nj=40
 # Optional train_config
 # 1. conf/train_transformer.yaml: Standard Conformer
 # 2. conf/train_transformer_bidecoder.yaml: Bidecoder Conformer
+dir=exp/conformer_bidecoder
 train_config=conf/train_conformer_bidecoder.yaml
 checkpoint=
 cmvn=false
-dir=exp/conformer_bidecoder
 
 # use average_checkpoint will get better result
 average_checkpoint=true
@@ -98,17 +98,9 @@ if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
     done
 
     for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2};do
-       cp ${wave_data}/${x}/text ${wave_data}/${x}/text.org
-
-       paste -d " " <(cut -f 1 ${wave_data}/${x}/text.org) \
-           <(cut -f 2- ${wave_data}/${x}/text.org | \
-           tr 'a-z' 'A-Z' | \
-           sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
-           sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
-           tr -d " ")\
-       > ${wave_data}/${x}/text
-
-       sed -i 's/\xEF\xBB\xBF//' ${wave_data}/${x}/text
+        cp ${wave_data}/${x}/text ${wave_data}/${x}/text.org
+        python3 local/fix_text.py ${wave_data}/${x}/text
+        echo "fix ${wave_data}/${x}/text"
     done
 fi
 
@@ -135,10 +127,11 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     mkdir -p $(dirname $dict)
     echo "<blank> 0" > ${dict} # 0 will be used for "blank" in CTC
     echo "<unk> 1" >> ${dict} # <unk> must be 1
-    tools/text2token.py -s 1 -n 1 --space "▁" data/${train_set}/text \
+    echo "▁ 2" >> ${dict} # 2 will be the spaces between English
+    tools/text2token.py -s 1 -n 1 data/${train_set}/text \
         | cut -f 2- -d" " | tr " " "\n" \
         | sort | uniq | grep -a -v -e '^\s*$' \
-        | awk '{print $0 " " NR+1}' >> ${dict} \
+        | awk '{print $0 " " NR+2}' >> ${dict} \
         || exit 1;
     num_token=$(cat $dict | wc -l)
     echo "<sos/eos> $num_token" >> $dict # <eos>
