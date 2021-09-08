@@ -33,12 +33,12 @@ def read_file(wav_scp, segments):
     end_time_list = []
     with open(segments, 'r', encoding='UTF-8') as fin:
         for line_str in fin:
-            utt_id, wav_id, start_time, end_time = line_str.strip().split()
-            utt_list.append(utt_id)
-            seg_path_list.append(wav_scp_dict[wav_id])
-            start_time_list.append(float(start_time))
-            end_time_list.append(float(end_time))
-            
+            arr = line_str.strip().split()
+            assert len(arr) == 4
+            utt_list.append(arr[0])
+            seg_path_list.append(wav_scp_dict[arr[1]])
+            start_time_list.append(float(arr[2]))
+            end_time_list.append(float(arr[3]))
     return utt_list, seg_path_list, start_time_list, end_time_list
 
 def output(output_wav_scp, utt_list, seg_path_list, start_time_list, end_time_list):
@@ -49,7 +49,8 @@ def output(output_wav_scp, utt_list, seg_path_list, start_time_list, end_time_li
         for a in range(utt_len):
             utt_id = utt_list[a]
             current_wav_path = seg_path_list[a]
-            output_dir = (os.path.dirname(current_wav_path)).replace("audio", 'audio_seg')
+            output_dir = (os.path.dirname(current_wav_path))\
+                .replace("audio", 'audio_seg')
             seg_wav_path = os.path.join(output_dir, utt_id + '.wav')
 
             # if not os.path.exists(output_dir):
@@ -73,7 +74,8 @@ def main():
     segments = sys.argv[2]
     output_wav_scp = sys.argv[3]
 
-    utt_list, seg_path_list, start_time_list, end_time_list = read_file(wav_scp, segments)
+    utt_list, seg_path_list, start_time_list, end_time_list \
+        = read_file(wav_scp, segments)
     output(output_wav_scp, utt_list, seg_path_list, start_time_list, end_time_list)
 
 if __name__ == '__main__':
