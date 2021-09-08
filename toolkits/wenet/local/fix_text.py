@@ -21,10 +21,7 @@ def read_text(text):
     h_t = open(text, 'r')
     text_dic = {}
     for line_str in h_t:
-        if line_str.find("\t") == -1:
-            utt, text_str = line_str.strip().split(" ", 1)
-        else:
-            utt, text_str = line_str.strip().split("\t", 1)
+        utt, text_str = line_str.strip().split(maxsplit=1)
         text_dic[utt] = text_str
     h_t.close()
     return text_dic

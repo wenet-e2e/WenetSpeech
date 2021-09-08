@@ -24,10 +24,7 @@ def read_file(wav_scp, segments):
     h_wav = open(wav_scp, 'r')
     wav_scp_dict = {}
     for line_str in h_wav:
-        if line_str.find("\t") == -1:
-            wav_id, path = line_str.strip().split(" ", 1)
-        else:
-            wav_id, path = line_str.strip().split("\t", 1)
+        wav_id, path = line_str.strip().split()
         wav_scp_dict[wav_id] = path
     h_wav.close()
 
