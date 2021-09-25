@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>WenetSpeech</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+  <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+  <!-- Custom styles for this template -->
+  <link href="css/agency.css" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+    <div class="container">
+      <!--<a class="navbar-brand js-scroll-trigger" href="#page-top">VoxCeleb</a>-->
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+        data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+        aria-label="Toggle navigation">
+        Menu
+        <i class="fa fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav text-uppercase ml-auto">
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#download">License</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#download">Download</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#sponsor">Sponsor</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#ack">Acknowledgement</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="">Paper</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="https://github.com/wenet-e2e/WenetSpeech">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header background-color: rgba(0, 0, 0, .8);
+z-index: 1000;  -->
+  <header class="masthead">
+    <!--<div class="overlay1">-->
+    <div class="container2">
+      <div class="intro-text">
+        <div class="intro-heading">WenetSpeech</div>
+        <div class="loader">
+          <svg id="wave" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 38.05">
+            <title>Audio Wave</title>
+            <path id="Line_1" data-name="Line 1"
+              d="M0.91,15L0.78,15A1,1,0,0,0,0,16v6a1,1,0,1,0,2,0s0,0,0,0V16a1,1,0,0,0-1-1H0.91Z" />
+            <path id="Line_2" data-name="Line 2"
+              d="M6.91,9L6.78,9A1,1,0,0,0,6,10V28a1,1,0,1,0,2,0s0,0,0,0V10A1,1,0,0,0,7,9H6.91Z" />
+            <path id="Line_3" data-name="Line 3"
+              d="M12.91,0L12.78,0A1,1,0,0,0,12,1V37a1,1,0,1,0,2,0s0,0,0,0V1a1,1,0,0,0-1-1H12.91Z" />
+            <path id="Line_4" data-name="Line 4"
+              d="M18.91,10l-0.12,0A1,1,0,0,0,18,11V27a1,1,0,1,0,2,0s0,0,0,0V11a1,1,0,0,0-1-1H18.91Z" />
+            <path id="Line_5" data-name="Line 5"
+              d="M24.91,15l-0.12,0A1,1,0,0,0,24,16v6a1,1,0,0,0,2,0s0,0,0,0V16a1,1,0,0,0-1-1H24.91Z" />
+            <path id="Line_6" data-name="Line 6"
+              d="M30.91,10l-0.12,0A1,1,0,0,0,30,11V27a1,1,0,1,0,2,0s0,0,0,0V11a1,1,0,0,0-1-1H30.91Z" />
+            <path id="Line_7" data-name="Line 7"
+              d="M36.91,0L36.78,0A1,1,0,0,0,36,1V37a1,1,0,1,0,2,0s0,0,0,0V1a1,1,0,0,0-1-1H36.91Z" />
+            <path id="Line_8" data-name="Line 8"
+              d="M42.91,9L42.78,9A1,1,0,0,0,42,10V28a1,1,0,1,0,2,0s0,0,0,0V10a1,1,0,0,0-1-1H42.91Z" />
+            <path id="Line_9" data-name="Line 9"
+              d="M48.91,15l-0.12,0A1,1,0,0,0,48,16v6a1,1,0,1,0,2,0s0,0,0,0V16a1,1,0,0,0-1-1H48.91Z" />
+          </svg>
+        </div>
+        <div class="intro-lead-in">A 10000+ Hours Multi-domain Chinese Corpus for Speech Recognition</div>
+        <!-- <a class="btn btn-primary btn-xl text-uppercase js-scroll-trigger" href="#services">Explore</a> -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Services -->
+  <section id="about">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <p> First, we collect all the data from YouTube and Podcast;
+            Then, OCR is used to label YouTube data, auto trancrition is used to label Podcast data;
+            Finally, a novel end-to-end label error detection method is used to further validate and filter the data.
+          </p>
+        </div>
+      </div>
+      <div class="row text-center">
+        <div class="col-md-4">
+          <!--<span class="fa-stack fa-4x">
+                  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+                  <i class="fa fa-shopping-cart fa-stack-1x fa-inverse"></i>
+                </span>-->
+          <h4 class="service-heading">
+            <p style="color:#2b4fcb;font-size:40px" <b>10,000 +</b> </p> hours high-label data
+          </h4>
+          <p class="text-muted">with confidence >= 95%, for supervised training.</p>
+        </div>
+        <div class="col-md-4">
+          <!--<span class="fa-stack fa-4x">
+                  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+                  <i class="fa fa-laptop fa-stack-1x fa-inverse"></i>
+                </span>-->
+          <h4 class="service-heading">
+            <p style="color:#2b4fcb;font-size:40px" <b>2400 +</b> </p> hours weak-label data
+          </h4>
+          <p class="text-muted"> 0.6 < confidence < 0.95, can be used for semi-supervised training or noise training. </p>
+        </div>
+        <div class="col-md-4">
+          <!-- <span class="fa-stack fa-4x">
+                  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+                  <i class="fa fa-lock fa-stack-1x fa-inverse"></i>
+                </span>-->
+          <h4 class="service-heading">
+            <p style="color:#2b4fcb;font-size:40px" <b>22400 +</b> </p> hours audio in total
+          </h4>
+          <p class="text-muted"> consists of labeled and unlabeled audio, can be used for unsupervised training or
+            pretraining. </p>
+        </div>
+      </div>
+  
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <h5 class="section-heading text-uppercase">Diversity</h5>
+          <p>We classify the data into 10 groups according to its domain, speaking style, or scenarios.</p>
+        </div>
+      </div>
+  
+      <div class="row">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-8">
+          <img src="img/diversity.png" alt="utterances" width="100%">
+        </div>
+        <div class="col-md-2">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Grid -->
+  <section class="bg-light" id="download">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <h5 class="section-heading text-uppercase">License</h5>
+            <br/>
+            <p> The WenetSpeech dataset is available to download for non-commercial purposes under a <a
+                href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License. </a>
+                WenetSpeech doesn't own the copyright of the audios, the copyright remains with the original owners of the video or audio,
+                and the public URL is given for the original video or audio.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <br/>
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <h5 class="section-heading text-uppercase">Download</h5>
+            <br/>
+            <p> Please fill out the Google Form here and follow the instructions to download the WenetSpeech dataset.
+            </p>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <section id="sponsor">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <h3 class="section-heading text-uppercase">Sponsor</h3>
+          <br/>
+          <br/>
+          <div class="row">
+            <div class="col-md-4">
+              <br/>
+              <img src="img/nwpu.png" width="250px"/>
+            </div>
+            <div class="col-md-4">
+              <img src="img/chumenwenwen.png" width="250px"/>
+            </div>
+            <div class="col-md-4">
+              <img src="img/aishelltech.png" width="250px"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="ack" class="bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <h3 class="section-heading text-uppercase">Acknowledgements</h3>
+            <br/>
+            <br/>
+            <p> WenetSpeech referred a lot of work of <a href="https://github.com/SpeechColab/GigaSpeech">GigaSpeech</a>
+                The authors would like to thank Jiayu Du and Guoguo Chen for their suggestions on this work.
+            </p>
+            <p> The authors would like to thank my college Lianhui Zhang, Yu Mao for collecting some of the YouTube data.
+            </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Plugin JavaScript -->
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Contact form JavaScript -->
+  <script src="js/jqBootstrapValidation.js"></script>
+  <script src="js/contact_me.js"></script>
+
+  <!-- Custom scripts for this template -->
+  <script src="js/agency.js"></script>
+
+</body>
+
+</html>
