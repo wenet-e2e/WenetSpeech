@@ -20,5 +20,5 @@ while (<STDIN>) {
     # replace "_" with a normal whitespace
     if ($_ =~ /\_/) {$_ =~ s:\_: :g;}
 
-    print "$_\n"; 
+    print "$_\n";
 }
