@@ -6,7 +6,7 @@ A 10000+ Hours Multi-domain Chinese Corpus for Speech Recognition
 
 ## Download
 
-Please visit the [official website](),
+Please visit the [official website](https://wenet-e2e.github.io/WenetSpeech/),
 read the license, and follow the instruction to download the data.
 
 
