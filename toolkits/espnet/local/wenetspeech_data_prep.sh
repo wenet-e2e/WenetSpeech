@@ -1,0 +1,1 @@
+../../wenet/local/wenetspeech_data_prep.sh
