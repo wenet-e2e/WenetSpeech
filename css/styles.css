@@ -11404,6 +11404,12 @@ header.masthead {
   background-position: center center;
   background-size: cover;
 }
+
+#masthead_container{
+  background-color: rgba(0, 0, 0, .6);
+  width: match;
+}
+
 header.masthead .masthead-subheading {
   font-size: 1.5rem;
   font-style: italic;
@@ -11810,4 +11816,8 @@ section#download_license{
   background-image: url("../assets/img/map-image.png");
   background-repeat: no-repeat;
   background-position: center;
+}
+
+.release_item {
+  color:rgba(0, 0, 0, 0.3)
 }
