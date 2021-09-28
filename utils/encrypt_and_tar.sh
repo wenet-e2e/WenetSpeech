@@ -21,12 +21,12 @@ rm -f $aes_list
 
 pushd $src
 for item in WenetSpeech.json audio/*/*/*; do
-    echo "Processing $item"
-    sub_dst=$dst/${item}.aes.tgz
-    mkdir -p $(dirname $sub_dst)
-	tar zcvf - $item | \
-	    openssl enc -e -aes-256-cbc -salt -pass pass:$PASSWORD -pbkdf2 -out $sub_dst
-    md5=$(md5sum $sub_dst | awk '{print $1}')
-    echo "$md5 ${item}.aes.tgz" >> $aes_list
+  echo "Processing $item"
+  sub_dst=$dst/${item}.aes.tgz
+  mkdir -p $(dirname $sub_dst)
+  tar zcvf - $item | \
+    openssl enc -e -aes-256-cbc -salt -pass pass:$PASSWORD -pbkdf2 -out $sub_dst
+  md5=$(md5sum $sub_dst | awk '{print $1}')
+  echo "$md5 ${item}.aes.tgz" >> $aes_list
 done
 popd
