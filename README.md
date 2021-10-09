@@ -1,7 +1,7 @@
 ## WenetSpeech
 A 10000+ Hours Multi-domain Chinese Corpus for Speech Recognition
 
-[**Offial website**](https://wenet-e2e.github.io/WenetSpeech/)
+[**Official website**](https://wenet-e2e.github.io/WenetSpeech/)
 | [**Paper**](https://arxiv.org/pdf/2110.03370.pdf)
 
 ![WenetSpeech](res/wenetspeech.jpg)
