@@ -82,7 +82,7 @@ As shown in the following table, we provide 3 training subsets, namely `S`, `M` 
 
 ## ACKNOWLEDGEMENTS
 
-WenetSpeech refers a lot of work of [GigaSpeech](https://github.com/SpeechColab/GigaSpeech), and we thank Jiayu Du and Guoguo Chen for their suggestions on this work.
-We thank Xi'an Future AI Innovation Center for providing hosting service for WenetSpeech. We also thank [MindSpore](https://www.mindspore.cn/) for the support of this work, which is a new deep learning computing framework.
-Our gratitude goes to Lianhui Zhang and Yu Mao for collecting some of the YouTube data.
+* WenetSpeech refers a lot of work of [GigaSpeech](https://github.com/SpeechColab/GigaSpeech), and we thank Jiayu Du and Guoguo Chen for their suggestions on this work.
+* We thank Xi'an Future AI Innovation Center for providing hosting service for WenetSpeech. We also thank [MindSpore](https://www.mindspore.cn/) for the support of this work, which is a new deep learning computing framework.
+* Our gratitude goes to Lianhui Zhang and Yu Mao for collecting some of the YouTube data.
 
