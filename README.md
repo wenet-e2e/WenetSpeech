@@ -1,6 +1,9 @@
 ## WenetSpeech
 A 10000+ Hours Multi-domain Chinese Corpus for Speech Recognition
 
+[**Offial website**](https://wenet-e2e.github.io/WenetSpeech/)
+| [**Paper**](https://arxiv.org/pdf/2110.03370.pdf)
+
 ![WenetSpeech](res/wenetspeech.jpg)
 
 
@@ -12,18 +15,17 @@ read the license, and follow the instruction to download the data.
 
 ## Benchmark
 
-| Toolkit | Model               | test\_net | test\_meeting |
-|---------|---------------------|-----------|---------------|
-| Kaldi   | Chain Model         |           |               |
-| ESPnet  | Joint CTC/Conformer |           |               |
-| WeNet   | Joint CTC/Conformer |           |               |
-
+| Toolkit | Dev  | Test\_Net | Test\_Meeting | AIShell-1 |
+|---------|------|:---------:|:-------------:|:---------:|
+| Kaldi   | 9.07 |   12.83   |     24.72     |    5.41   |
+| ESPNet  | 9.70 |    8.90   |     15.90     |    3.90   |
+| WeNet   | 8.88 |    9.70   |     15.59     |    4.61   |
 
 ## Description
 
 ### Creation
 
-First, we collect all the data from YouTube and Podcast; Then, OCR is used to label YouTube data, auto trancrition is used to label Podcast data; Finally, a novel end-to-end label error detection method is used to further validate and filter the data.
+All the data are collected from YouTube and Podcast. Optical character recognition (OCR) and automatic speech recognition (ASR) techniques are adopted to label each YouTube and Podcast recording, respectively. To improve the quality of the corpus, we use a novel end-to-end label error detection method to further validate and filter the data.
 
 
 ### Categories
@@ -39,8 +41,7 @@ In summary, WenetSpeech groups all data into 3 categories, as the following tabl
 
 ### High Label Data
 
-All of the data is from Youtube and Podcast, and we tag all the data with its source and domain.
-We classify the data into 10 groups according to its domain,speaking style, or scenarios.
+We classify the high label into 10 groups according to its domain, speaking style, and scenarios.
 
 | Domain      | Youtube | Podcast | Total  |
 |-------------|---------|---------|--------|
@@ -56,7 +57,7 @@ We classify the data into 10 groups according to its domain,speaking style, or s
 | others      | 144     | 507.5   | 651.5  |
 | Total       | 6113    | 3892    | 10005  |
 
-We provide 3 training subsets, namely `S`, `M` and `L`. Subsets `S`, `M` are sampled from all the high label data which has the oracle confidence 1.0
+As shown in the following table, we provide 3 training subsets, namely `S`, `M` and `L` for building ASR systems on different data scales.
 
 | Training Subsets | Confidence  | Hours |
 |------------------|-------------|-------|
@@ -70,7 +71,7 @@ We provide 3 training subsets, namely `S`, `M` and `L`. Subsets `S`, `M` are sam
 |-----------------|-------|--------------|-----------------------------------------------------------------------------------------|
 | DEV             | 20    | Internet     | Specially designed for some speech tools which require cross-validation set in training |
 | TEST\_NET       | 23    | Internet     | Match test                                                                              |
-| TEST\_MEETING   | 15    | Real meeting | Mismatch test which is far-field, conversational, and spontaneous meeting speech        |
+| TEST\_MEETING   | 15    | Real meeting | Mismatch test which is a far-field, conversational, spontaneous, and meeting dataset   |
 
 ## Contributors
 
@@ -80,8 +81,7 @@ We provide 3 training subsets, namely `S`, `M` and `L`. Subsets `S`, `M` are sam
 
 ## ACKNOWLEDGEMENTS
 
-1. WenetSpeech referred a lot of work of [GigaSpeech](https://github.com/SpeechColab/GigaSpeech),
-   including metadata design, license design, data encryption, downloading pipeline, and so on.
-   The authors would like to thank Jiayu Du and Guoguo Chen for their suggestions on this work.
-2. The authors would like to thank my college Lianhui Zhang, Yu Mao for collecting some of the YouTube data.
+WenetSpeech refers a lot of work of [GigaSpeech](https://github.com/SpeechColab/GigaSpeech), and we thank Jiayu Du and Guoguo Chen for their suggestions on this work.
+We thank Xi'an Future AI Innovation Center for providing hosting service for WenetSpeech. We also thank [MindSpore](https://www.mindspore.cn/) for the support of this work, which is a new deep learning computing framework.
+Our gratitude goes to Lianhui Zhang and Yu Mao for collecting some of the YouTube data.
 
