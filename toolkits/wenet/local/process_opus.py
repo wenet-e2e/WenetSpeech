@@ -16,90 +16,74 @@
 
 # usage: python3 process_opus.py wav.scp segments output_wav.scp
 
-# note: This scipt will create a "audio_seg" directory under
-# the original wenetspeech folder to store the processed audio,
-# please ensure that your disk have sufficient space
-# (the "audio_seg" directory is about 2.1TB).
-
 from pydub import AudioSegment
 import sys
 import os
-import pdb
+
 
 def read_file(wav_scp, segments):
-    h_wav = open(wav_scp, 'r')
     wav_scp_dict = {}
-    for line_str in h_wav:
-        try:
-            if line_str.find("\t") == -1:
-                wav_id, path = line_str.strip().split(" ", 1)
-            else:
-                wav_id, path = line_str.strip().split("\t", 1)
+    with open(wav_scp, 'r', encoding='UTF-8') as fin:
+        for line_str in fin:
+            wav_id, path = line_str.strip().split()
             wav_scp_dict[wav_id] = path
-        except:
-            continue
-    h_wav.close()
 
-    h_seg = open(segments, 'r')
-    wav_path_dict = {}
-    start_time_dict = {}
-    end_time_dict = {}
-    for line_str in h_seg:
-        try:
-            if line_str.find("\t") == -1:
-                utt_id, wav_id, start_time, end_time = line_str.strip().split()
-            else:
-                utt_id, wav_id, start_time, end_time = line_str.strip().split()
-            wav_path_dict[utt_id] = wav_scp_dict[wav_id]
-            start_time_dict[utt_id] = float(start_time)
-            end_time_dict[utt_id] = float(end_time)
-        except:
-            continue
-    h_seg.close()
-    return wav_path_dict, start_time_dict, end_time_dict
+    utt_list = []
+    seg_path_list = []
+    start_time_list = []
+    end_time_list = []
+    with open(segments, 'r', encoding='UTF-8') as fin:
+        for line_str in fin:
+            arr = line_str.strip().split()
+            assert len(arr) == 4
+            utt_list.append(arr[0])
+            seg_path_list.append(wav_scp_dict[arr[1]])
+            start_time_list.append(float(arr[2]))
+            end_time_list.append(float(arr[3]))
+    return utt_list, seg_path_list, start_time_list, end_time_list
 
-def output(output_wav_scp, wav_path_dict, start_time_dict, end_time_dict):
-    utt_list = wav_path_dict.keys()
-    utt_len = len(utt_list)
 
-    a = 0
-    percent = 0.01
-    step = int(utt_len * percent)
-    h_wav_scp = open(output_wav_scp, 'w')
-    previous_wav_path = ""
-    for utt_id in utt_list:
-        current_wav_path = wav_path_dict[utt_id]
-        output_dir = (os.path.dirname(current_wav_path)).replace("audio", 'audio_seg')
-        seg_wav_path = os.path.join(output_dir, utt_id + '.wav')
+# TODO(Qijie): Fix the process logic
+def output(output_wav_scp, utt_list, seg_path_list, start_time_list,
+           end_time_list):
+    num_utts = len(utt_list)
+    step = int(num_utts * 0.01)
+    with open(output_wav_scp, 'w', encoding='UTF-8') as fout:
+        previous_wav_path = ""
+        for i in range(num_utts):
+            utt_id = utt_list[i]
+            current_wav_path = seg_path_list[i]
+            output_dir = (os.path.dirname(current_wav_path)) \
+                .replace("audio", 'audio_seg')
+            seg_wav_path = os.path.join(output_dir, utt_id + '.wav')
 
-        if not os.path.exists(output_dir):
-            try:
-                os.makedirs(output_dir)
-            except:
-                pass
+            # if not os.path.exists(output_dir):
+            #     os.makedirs(output_dir)
 
-        if current_wav_path != previous_wav_path:
-            source_wav = AudioSegment.from_file(current_wav_path)
-        previous_wav_path = current_wav_path
+            if current_wav_path != previous_wav_path:
+                source_wav = AudioSegment.from_file(current_wav_path)
+            previous_wav_path = current_wav_path
 
-        start = int(start_time_dict[utt_id] * 1000)
-        end = int(end_time_dict[utt_id] * 1000)
-        target_audio = source_wav[start:end].set_frame_rate(16000)
-        target_audio.export(seg_wav_path, format="wav")
+            start = int(start_time_list[i] * 1000)
+            end = int(end_time_list[i] * 1000)
+            target_audio = source_wav[start:end].set_frame_rate(16000)
+            target_audio.export(seg_wav_path, format="wav")
 
-        h_wav_scp.write("%s %s\n" % (utt_id, seg_wav_path))
-        if (a != 0) and  (a % step == 0):
-            print("seg wav finished: %d%%" % int(a/step))
-        a += 1
-    h_wav_scp.close()
+            fout.write("{} {}\n".format(utt_id, seg_wav_path))
+            if i % step == 0:
+                print("seg wav finished: {}%".format(int(i / step)))
+
 
 def main():
     wav_scp = sys.argv[1]
     segments = sys.argv[2]
     output_wav_scp = sys.argv[3]
 
-    wav_path_dict, start_time_dict, end_time_dict = read_file(wav_scp, segments)
-    output(output_wav_scp, wav_path_dict, start_time_dict, end_time_dict)
+    utt_list, seg_path_list, start_time_list, end_time_list \
+        = read_file(wav_scp, segments)
+    output(output_wav_scp, utt_list, seg_path_list, start_time_list,
+           end_time_list)
+
 
 if __name__ == '__main__':
     main()
