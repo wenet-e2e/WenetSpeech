@@ -43,15 +43,16 @@ def read_file(wav_scp, segments):
     return utt_list, seg_path_list, start_time_list, end_time_list
 
 
+# TODO(Qijie): Fix the process logic
 def output(output_wav_scp, utt_list, seg_path_list, start_time_list,
            end_time_list):
-    utt_len = len(utt_list)
-    step = int(utt_len * 0.01)
+    num_utts = len(utt_list)
+    step = int(num_utts * 0.01)
     with open(output_wav_scp, 'w', encoding='UTF-8') as fout:
         previous_wav_path = ""
-        for a in range(utt_len):
-            utt_id = utt_list[a]
-            current_wav_path = seg_path_list[a]
+        for i in range(num_utts):
+            utt_id = utt_list[i]
+            current_wav_path = seg_path_list[i]
             output_dir = (os.path.dirname(current_wav_path)) \
                 .replace("audio", 'audio_seg')
             seg_wav_path = os.path.join(output_dir, utt_id + '.wav')
@@ -63,14 +64,14 @@ def output(output_wav_scp, utt_list, seg_path_list, start_time_list,
                 source_wav = AudioSegment.from_file(current_wav_path)
             previous_wav_path = current_wav_path
 
-            start = int(start_time_list[a] * 1000)
-            end = int(end_time_list[a] * 1000)
+            start = int(start_time_list[i] * 1000)
+            end = int(end_time_list[i] * 1000)
             target_audio = source_wav[start:end].set_frame_rate(16000)
             target_audio.export(seg_wav_path, format="wav")
 
             fout.write("{} {}\n".format(utt_id, seg_wav_path))
-            if (a != 0) and (a % step == 0):
-                print("seg wav finished: {}%".format(int(a / step)))
+            if i % step == 0:
+                print("seg wav finished: {}%".format(int(i / step)))
 
 
 def main():
