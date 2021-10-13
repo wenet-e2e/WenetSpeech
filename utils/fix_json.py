@@ -1,5 +1,4 @@
 # Copyright 2021  Mobvoi Inc(Binbin Zhang)
-#                 ASLP@NWPU (Hang Lyu)
 
 import json
 import re
@@ -20,6 +19,8 @@ for long_audio in json_data['audios']:
         text = re.sub(r' ', '', text)
         # remove no-break space--chr(160)
         text = re.sub(r'\u00A0', '', text)
+        # remove omega
+        text = re.sub(r'Ω', '', text)
         # remove space in Chinese char, apply it twice
         text = re.sub(r'([^a-zA-Z ]+) ([^a-zA-Z ]+)', '\\1\\2', text)
         text = re.sub(r'([^a-zA-Z ]+) ([^a-zA-Z ]+)', '\\1\\2', text)
