@@ -8,15 +8,15 @@ encoder_conf:
     num_blocks: 12      # the number of encoder blocks
     dropout_rate: 0.1
     positional_dropout_rate: 0.1
-    attention_dropout_rate: 0.1
-    input_layer: conv2d6 # encoder input type, you can chose conv2d, conv2d6 and conv2d8
+    attention_dropout_rate: 0.0
+    input_layer: conv2d # encoder input type, you can chose conv2d, conv2d6 and conv2d8
     normalize_before: true
-    cnn_module_kernel: 31
+    cnn_module_kernel: 15
     use_cnn_module: True
+    cnn_module_norm: 'layer_norm'
     activation_type: 'swish'
     pos_enc_layer_type: 'rel_pos'
     selfattention_layer_type: 'rel_selfattn'
-    cnn_module_norm: 'layer_norm' # using nn.LayerNorm makes model converge faster
 
 # decoder related
 decoder: transformer
@@ -26,8 +26,8 @@ decoder_conf:
     num_blocks: 6
     dropout_rate: 0.1
     positional_dropout_rate: 0.1
-    self_attention_dropout_rate: 0.1
-    src_attention_dropout_rate: 0.1
+    self_attention_dropout_rate: 0.0
+    src_attention_dropout_rate: 0.0
 
 # hybrid CTC/attention
 model_conf:
@@ -35,54 +35,39 @@ model_conf:
     lsm_weight: 0.1     # label smoothing option
     length_normalized_loss: false
 
-# use raw_wav or kaldi feature
-raw_wav: true
-
-# feature extraction
-collate_conf:
-    # waveform level config
-    wav_distortion_conf:
-        wav_dither: 1.0
-        wav_distortion_rate: 0.0
-        distortion_methods: []
+dataset_conf:
+    filter_conf:
+        max_length: 1200
+        min_length: 10
+        token_max_length: 100
+        token_min_length: 1
+    resample_conf:
+        resample_rate: 16000
     speed_perturb: false
-    feature_extraction_conf:
-        feature_type: 'fbank'
-        mel_bins: 80
+    fbank_conf:
+        num_mel_bins: 80
         frame_shift: 10
         frame_length: 25
-        using_pitch: false
-        resample: 16000
-    # spec level config
-    # spec_swap: false
-    feature_dither: 0.0 # add dither [-feature_dither,feature_dither] on fbank feature
+        dither: 1.0
     spec_aug: true
     spec_aug_conf:
-        warp_for_time: False
-        num_t_mask: 3
+        num_t_mask: 2
         num_f_mask: 2
         max_t: 50
-        max_f: 10
-        max_w: 80
-    spec_sub: true
-    spec_sub_conf:
-        num_t_sub: 3
-        max_t: 20
-
-# dataset related
-dataset_conf:
-    max_length: 2000
-    min_length: 100
-    token_max_length: 160
-    token_min_length: 1
-    batch_type: 'static' # static or dynamic
-    # the size of batch_size should be set according to your gpu memory size, here we used v100 gpu whose memory size is 32GB
-    batch_size: 28
+        max_f: 30
+    shuffle: true
+    shuffle_conf:
+        shuffle_size: 1500
     sort: true
+    sort_conf:
+        sort_size: 1000  # sort_size should be less than shuffle_size
+    batch_conf:
+        batch_type: 'static' # static or dynamic
+        batch_size: 32
 
 grad_clip: 5
-accum_grad: 4
-max_epoch: 30
+accum_grad: 16
+max_epoch: 26
 log_interval: 100
 
 optim: adam
@@ -90,4 +75,4 @@ optim_conf:
     lr: 0.001
 scheduler: warmuplr     # pytorch v1.1.0+ required
 scheduler_conf:
-    warmup_steps: 100000
+    warmup_steps: 5000
