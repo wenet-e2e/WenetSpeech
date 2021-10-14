@@ -8,44 +8,33 @@
 # Use this to control how many gpu you use, It's 1-gpu training if you specify
 # just 1gpu, otherwise it's is multiple gpu training based on DDP in pytorch
 export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
-stage=4 # start from 0 if you need to start from data preparation
-stop_stage=4
+stage=0
+stop_stage=5
 
-# The num of nodes or machines used for multi-machine training
-# Default 1 for single machine/node
-# NFS will be needed if you want run multi-machine training
+# The num of nodes
 num_nodes=1
-# The rank of each node or machine, range from 0 to num_nodes -1
-# The first node/machine sets node_rank 0, the second one sets node_rank 1
-# the third one set node_rank 2, and so on. Default 0
+# The rank of current node
 node_rank=0
 
-# data
-# use your own data path. You need to download the WenetSpeech dataset by yourself.
-wenetspeech_data_dir=/home/work_nfs5/qjshao/DATA/wenetspeech
+# Use your own data path. You need to download the WenetSpeech dataset by yourself.
+wenetspeech_data_dir=/ssd/nfs07/binbinzhang/wenetspeech
+# Make sure you have 1.2T for ${shards_dir}
+shards_dir=/ssd/nfs06/unified_data/wenetspeech_shards
 
 # WenetSpeech training set
 set=L
-train_set=train_`echo $set |tr 'A-Z' 'a-z'`
-train_dev=dev
-test_set_1=test_net
-test_set_2=test_meeting
+train_set=train_`echo $set | tr 'A-Z' 'a-z'`
+dev_set=dev
+test_sets="test_net test_meeting"
 
-# wav data dir
-wave_data=data
-nj=40
-# Optional train_config
-# 1. conf/train_transformer.yaml: Standard Conformer
-# 2. conf/train_transformer_bidecoder.yaml: Bidecoder Conformer
-train_config=conf/train_conformer_bidecoder.yaml
+train_config=conf/train_conformer.yaml
 checkpoint=
-cmvn=false
-dir=exp/conformer_bidecoder
+cmvn=true
+dir=exp/conformer
 
-# use average_checkpoint will get better result
+decode_checkpoint=
 average_checkpoint=true
-# maybe you can try to adjust it if you can not get close results as README.md
-average_num=5
+average_num=10
 decode_modes="attention_rescoring ctc_greedy_search"
 
 . tools/parse_options.sh || exit 1;
@@ -53,207 +42,162 @@ decode_modes="attention_rescoring ctc_greedy_search"
 set -u
 set -o pipefail
 
-# Data preparation
+# Data download
+if [ ${stage} -le -1 ] && [ ${stop_stage} -ge -1 ]; then
+    echo "Please follow https://github.com/wenet-e2e/WenetSpeech to download the data."
+    exit 0;
+fi
+
 if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
-    echo "Data preparation"
-    local/wenetspeech_data_prep.sh \
-        --train-subset $set \
-        --stage 1 \
-        $wenetspeech_data_dir \
-        ${wave_data} \
-        || exit 1;
-
-    for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2};do
-        tmpdir=temp_${RANDOM}
-        mkdir $tmpdir
-        for i in `seq 1 ${nj}`;do
-        {
-            tools/data/split_scp.pl -j ${nj} ${i} --one-based \
-                ${wave_data}/${x}/segments \
-                $tmpdir/segments.${i}
-
-            python3 local/process_opus.py \
-                ${wave_data}/${x}/wav.scp \
-                $tmpdir/segments.${i} \
-                $tmpdir/wav.scp.${i}
-        }&
-        done
-        wait
-        mv ${wave_data}/${x}/wav.scp ${wave_data}/${x}/wav.scp.ori
-        for i in `seq 1 ${nj}`;do
-            cat $tmpdir/wav.scp.${i} >> ${wave_data}/${x}/wav.scp
-        done
-        rm -rf $tmpdir
-    done
-
-    for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2};do
-        cp ${wave_data}/${x}/text ${wave_data}/${x}/text.org
-
-        paste -d " " <(cut -f 1 ${wave_data}/${x}/text.org) \
-            <(cut -f 2- ${wave_data}/${x}/text.org | \
-            tr 'a-z' 'A-Z' | \
-            sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
-            sed 's/\([A-Z]\) \([A-Z]\)/\1▁\2/g' | \
-            tr -d " ")\
-        > ${wave_data}/${x}/text
-
-        sed -i 's/\xEF\xBB\xBF//' ${wave_data}/${x}/text
-    done
+  echo "Data preparation"
+  local/wenetspeech_data_prep.sh \
+    --train-subset $set \
+    $wenetspeech_data_dir \
+    data || exit 1;
 fi
 
-# compute cmvn
+dict=data/dict/lang_char.txt
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
-    echo "compute cmvn"
-    # optional
-    # compute cmvn, perhaps you can sample some segmented examples fron wav.scp for cmvn computation
-    if $cmvn ;then
-        python3 tools/compute_cmvn_stats.py \
-        --num_workers ${nj} \
-        --train_config $train_config \
-        --in_scp $wave_data/$train_set/wav.scp \
-        --out_cmvn $wave_data/$train_set/global_cmvn \
-        || exit 1;
-    fi
-fi
-
-dict=${wave_data}/dict/lang_char.txt
-echo "dictionary: ${dict}"
-# Make train dict
-if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     echo "Make a dictionary"
+    echo "dictionary: ${dict}"
     mkdir -p $(dirname $dict)
     echo "<blank> 0" > ${dict} # 0 will be used for "blank" in CTC
     echo "<unk> 1" >> ${dict} # <unk> must be 1
+    echo "▁ 2" >> ${dict} # ▁ is for space
     tools/text2token.py -s 1 -n 1 --space "▁" data/${train_set}/text \
         | cut -f 2- -d" " | tr " " "\n" \
         | sort | uniq | grep -a -v -e '^\s*$' \
-        | awk '{print $0 " " NR+1}' >> ${dict} \
+        | grep -v "▁" \
+        | awk '{print $0 " " NR+2}' >> ${dict} \
         || exit 1;
     num_token=$(cat $dict | wc -l)
-    echo "<sos/eos> $num_token" >> $dict # <eos>
+    echo "<sos/eos> $num_token" >> $dict
 fi
 
-# Prepare wenet requried data
+if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
+  echo "Compute cmvn"
+  # Here we use all the training data, you can sample some some data to save time
+  # BUG!!! We should use the segmented data for CMVN
+  if $cmvn; then
+      python3 tools/compute_cmvn_stats.py \
+      --num_workers 16 \
+      --train_config $train_config \
+      --in_scp data/$train_set/wav.scp \
+      --out_cmvn data/$train_set/global_cmvn \
+      || exit 1;
+  fi
+fi
+
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
-    echo "Prepare data, prepare requried format"
-    for x in ${train_set} ${train_dev} ${test_set_1} ${test_set_2}; do
-        tools/format_data.sh \
-            --nj ${nj} \
-            --feat-type wav \
-            --feat ${wave_data}/$x/wav.scp \
-            ${wave_data}/$x \
-            ${dict} \
-            > ${wave_data}/$x/format.data \
-            || exit 1;
-    done
+  echo "Making shards, please wait..."
+  RED='\033[0;31m'
+  NOCOLOR='\033[0m'
+  echo -e "It requires ${RED}1.2T ${NOCOLOR}space for $shards_dir, please make sure you have enough space"
+  echo -e "It takes about ${RED}12 ${NOCOLOR}hours with 32 threads"
+  for x in $dev_set $test_sets ${train_set}; do
+    dst=$shards_dir/$x
+    mkdir -p $dst
+    tools/make_shard_list.py --resample 16000 --num_utts_per_shard 1000 \
+      --num_threads 32 --segments data/$x/segments \
+      data/$x/wav.scp data/$x/text \
+      $(realpath $dst) data/$x/data.list
+  done
 fi
 
-# Training
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
-    mkdir -p $dir
-    INIT_FILE=$dir/ddp_init
-    rm -f $INIT_FILE # delete old one before starting
-    init_method=file://$(readlink -f $INIT_FILE)
-    echo "$0: init method is $init_method"
-    num_gpus=$(echo $CUDA_VISIBLE_DEVICES | awk -F "," '{print NF}')
-    # Use "nccl" if it works, otherwise use "gloo"
-    dist_backend="gloo"
-    # The total number of processes/gpus, so that the master knows
-    # how many workers to wait for.
-    # More details about ddp can be found in
-    # https://pytorch.org/tutorials/intermediate/dist_tuto.html
-    world_size=`expr $num_gpus \* $num_nodes`
-    echo "total gpus is: $world_size"
-    cmvn_opts=
-    $cmvn && cp ${wave_data}/${train_set}/global_cmvn $dir
-    $cmvn && cmvn_opts="--cmvn ${dir}/global_cmvn"
-    # train.py will write $train_config to $dir/train.yaml with model input
-    # and output dimension, train.yaml will be used for inference or model
-    # export later
-    for ((i = 0; i < $num_gpus; ++i)); do
-    {
-        gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$i+1])
-        # Rank of each gpu/process used for knowing whether it is
-        # the master of a worker.
-        rank=`expr $node_rank \* $num_gpus + $i`
-        python wenet/bin/train.py --gpu $gpu_id \
-            --config $train_config \
-            --train_data $wave_data/$train_set/format.data \
-            --cv_data $wave_data/$train_dev/format.data \
-            ${checkpoint:+--checkpoint $checkpoint} \
-            --model_dir $dir \
-            --ddp.init_method $init_method \
-            --ddp.world_size $world_size \
-            --ddp.rank $rank \
-            --ddp.dist_backend $dist_backend \
-            --num_workers 4 \
-            $cmvn_opts \
-            --pin_memory
-    } &
-    done
-    wait
+  echo "Start training"
+  mkdir -p $dir
+  # INIT_FILE is for DDP synchronization
+  INIT_FILE=$dir/ddp_init
+  init_method=file://$(readlink -f $INIT_FILE)
+  echo "$0: init method is $init_method"
+  num_gpus=$(echo $CUDA_VISIBLE_DEVICES | awk -F "," '{print NF}')
+  # Use "nccl" if it works, otherwise use "gloo"
+  dist_backend="nccl"
+  world_size=`expr $num_gpus \* $num_nodes`
+  echo "total gpus is: $world_size"
+  cmvn_opts=
+  $cmvn && cp data/${train_set}/global_cmvn $dir
+  $cmvn && cmvn_opts="--cmvn ${dir}/global_cmvn"
+  # train.py will write $train_config to $dir/train.yaml with model input
+  # and output dimension, train.yaml will be used for inference or model
+  # export later
+  for ((i = 0; i < $num_gpus; ++i)); do
+  {
+    gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$i+1])
+    # Rank of each gpu/process used for knowing whether it is
+    # the master of a worker.
+    rank=`expr $node_rank \* $num_gpus + $i`
+    python wenet/bin/train.py --gpu $gpu_id \
+      --config $train_config \
+      --data_type "shard" \
+      --symbol_table $dict \
+      --train_data data/$train_set/data.list \
+      --cv_data data/$dev_set/data.list \
+      ${checkpoint:+--checkpoint $checkpoint} \
+      --model_dir $dir \
+      --ddp.init_method $init_method \
+      --ddp.world_size $world_size \
+      --ddp.rank $rank \
+      --ddp.dist_backend $dist_backend \
+      $cmvn_opts \
+      --num_workers 8 \
+      --pin_memory
+  } &
+  done
+  wait
 fi
 
-# test
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
-    # Test model, please specify the model you want to test by --checkpoint
-    decode_checkpoint=$dir/avg_${average_num}.pt
-    # TODO, Add model average here
-    if [ ${average_checkpoint} == true ]; then
-        echo "do model average and final checkpoint is $decode_checkpoint"
-        python wenet/bin/average_model.py \
-            --dst_model $decode_checkpoint \
-            --src_path $dir  \
-            --num ${average_num} \
-            --val_best
-    fi
-    # Specify decoding_chunk_size if it's a unified dynamic chunk trained model
-    # -1 for full chunk
-    decoding_chunk_size=
-    ctc_weight=0.5
-    # Polling GPU id begin with index 0
-    num_gpus=$(echo $CUDA_VISIBLE_DEVICES | awk -F "," '{print NF}')
-    idx=0
-    for test in ${test_set_1} ${test_set_2}; do
-        for mode in ${decode_modes}; do
-        {
-            {
-                test_dir=$dir/${test}_${mode}
-                mkdir -p $test_dir
-                gpu_id=$(echo $CUDA_VISIBLE_DEVICES | cut -d',' -f$[$idx+1])
-                python wenet/bin/recognize.py --gpu $gpu_id \
-                    --mode $mode \
-                    --config $dir/train.yaml \
-                    --test_data $wave_data/$test/format.data \
-                    --checkpoint $decode_checkpoint \
-                    --beam_size 20 \
-                    --batch_size 1 \
-                    --penalty 0.0 \
-                    --dict $dict \
-                    --result_file $test_dir/text \
-                    --ctc_weight $ctc_weight \
-                    ${decoding_chunk_size:+--decoding_chunk_size $decoding_chunk_size}
-
-                # a raw version wer without refining processs
-                python tools/compute-wer.py --char=1 --v=1 \
-                    $wave_data/$test/text $test_dir/text > $test_dir/wer
-
-            } &
-            ((idx+=1))
-            if [ $idx -eq $num_gpus ]; then
-              idx=0
-            fi
-        }
-        done
+  echo "Test model"
+  if [ ${average_checkpoint} == true ]; then
+    decode_checkpoint=$dir/avg${average_num}.pt
+    echo "do model average and final checkpoint is $decode_checkpoint"
+    python wenet/bin/average_model.py \
+        --dst_model $decode_checkpoint \
+        --src_path $dir  \
+        --num ${average_num} \
+        --val_best
+  fi
+  # Specify decoding_chunk_size if it's a unified dynamic chunk trained model
+  # -1 for full chunk
+  decoding_chunk_size=
+  ctc_weight=0.5
+  reverse_weight=0.0
+  for testset in ${test_sets} ${dev_set}; do
+  {
+    for mode in ${decode_modes}; do
+    {
+      base=$(basename $decode_checkpoint)
+      result_dir=$dir/${testset}_${mode}_${base}
+      mkdir -p $result_dir
+      python wenet/bin/recognize.py --gpu 0 \
+        --mode $mode \
+        --config $dir/train.yaml \
+        --data_type "shard" \
+        --test_data data/$testset/data.list \
+        --checkpoint $decode_checkpoint \
+        --beam_size 10 \
+        --batch_size 1 \
+        --penalty 0.0 \
+        --dict $dict \
+        --ctc_weight $ctc_weight \
+        --reverse_weight $reverse_weight \
+        --result_file $result_dir/text \
+        ${decoding_chunk_size:+--decoding_chunk_size $decoding_chunk_size}
+      python tools/compute-wer.py --char=1 --v=1 \
+        $feat_dir/$testset/text $result_dir/text > $result_dir/wer
+    }
     done
     wait
+  }
+  done
 fi
 
-# Export the best model you want
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
-    echo "Export the best model you want"
-    python wenet/bin/export_jit.py \
-        --config $dir/train.yaml \
-        --checkpoint $dir/avg_${average_num}.pt \
-        --output_file $dir/final.zip
+  echo "Export the best model you want"
+  python wenet/bin/export_jit.py \
+    --config $dir/train.yaml \
+    --checkpoint $dir/avg_${average_num}.pt \
+    --output_file $dir/final.zip
 fi
