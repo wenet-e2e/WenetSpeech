@@ -76,13 +76,18 @@ As shown in the following table, we provide 3 training subsets, namely `S`, `M` 
 
 ## Contributors
 
+
 | <a href="http://lxie.npu-aslp.org" target="_blank"><img src="https://raw.githubusercontent.com/wenet-e2e/wenet-contributors/main/colleges/nwpu.png" width="250px"></a> | <a href="https://www.chumenwenwen.com" target="_blank"><img src="https://raw.githubusercontent.com/wenet-e2e/wenet-contributors/main/companies/chumenwenwen.png" width="250px"></a> | <a href="http://www.aishelltech.com" target="_blank"><img src="https://raw.githubusercontent.com/wenet-e2e/wenet-contributors/main/companies/aishelltech.png" width="250px"></a> |
 | ---- | ---- | ---- |
+
+|<a href="" target="_blank"><img src="https://raw.githubusercontent.com/wenet-e2e/WenetSpeech/gh-pages/assets/img/tencent.png" width="250px"></a> | <a href="" target="_blank"><img src="https://raw.githubusercontent.com/wenet-e2e/WenetSpeech/gh-pages/assets/img/MindSpore.png" width="250px"></a> | <a href="" target="_blank"><img src="https://raw.githubusercontent.com/wenet-e2e/WenetSpeech/gh-pages/assets/img/xian.png" width="250px"></a> |
+| ---- | ---- | ---- |
+
 
 
 ## ACKNOWLEDGEMENTS
 
 * WenetSpeech refers a lot of work of [GigaSpeech](https://github.com/SpeechColab/GigaSpeech), and we thank Jiayu Du and Guoguo Chen for their suggestions on this work.
-* We thank Xi'an Future AI Innovation Center for providing hosting service for WenetSpeech. We also thank [MindSpore](https://www.mindspore.cn/) for the support of this work, which is a new deep learning computing framework.
+* We thank Tencent Ethereal Audio Lab and Xi'an Future AI Innovation Center for providing hosting service for WenetSpeech. We also thank [MindSpore](https://www.mindspore.cn/) for the support of this work, which is a new deep learning computing framework.
 * Our gratitude goes to Lianhui Zhang and Yu Mao for collecting some of the YouTube data.
 
