@@ -85,7 +85,7 @@ if [ $stage -le 3 ]; then
 
   # do volume-perturbation on the training data prior to extracting hires
   # features; this helps make trained nnets more invariant to test data volume.
-  
+
   # By default, we skip the volume perturbation in WeNetSpeech.
   #utils/data/perturb_data_dir_volume.sh data/${train_set}_sp_hires
 
