@@ -3,10 +3,7 @@
 #                 Mobvoi Inc (Author: Binbin Zhang)
 # Apache 2.0
 
-# This script is copied from mini_librispeech/s5
-
-# To accommodate with the setups of other toolkits, we give up the techniques
-# about SpecAug and Ivector in this script.
+# 1b is as 1a but adding SpecAugment.
 
 # Set -e here so that we catch if any executable fails immediately
 set -euo pipefail
@@ -22,7 +19,7 @@ nnet3_affix=_cleaned
 
 # The rest are configs specific to this script.  Most of the parameters
 # are just hardcoded at this level, in the commands below.
-affix=_1a   # affix for the TDNN directory name
+affix=_1b   # affix for the TDNN directory name
 tree_affix=
 train_stage=-10
 get_egs_stage=-10
@@ -34,7 +31,7 @@ srand=0
 remove_egs=false
 common_egs_dir=
 reporting_email=
-num_epochs=4
+num_epochs=5
 frames_per_iter=3000000
 initial_effective_lrate=0.00015
 final_effective_lrate=0.000015
@@ -61,6 +58,15 @@ If you want to use GPUs (and have them), go to src/, and configure and make on a
 where "nvcc" is installed.
 EOF
 fi
+
+# The iVector-extraction and feature-dumping parts are the same as the standard
+# nnet3 setup, and you can skip them by setting "--stage 11" if you have already
+# run those things.
+#local/chain/run_ivector_common.sh --stage $stage \
+#                                  --train-set $train_set \
+#                                  --test-sets "$test_sets" \
+#                                  --gmm $gmm \
+#                                  --nnet3-affix "$nnet3_affix" || exit 1;
 
 # We don't conduct the techniques about SpecAug and Ivector.
 # To accommodate with Kaldi's customary nomenclature, we masquerade the
@@ -129,6 +135,7 @@ if [ $stage -le 14 ]; then
   # than filterbanks.
   idct-layer name=idct input=input dim=40 cepstral-lifter=22 affine-transform-file=$dir/configs/idct.mat
   batchnorm-component name=idct-batchnorm input=idct
+  spec-augment-layer name=spec-augment freq-max-proportion=0.5 time-zeroed-proportion=0.2 time-mask-max-frames=20 include-in-init=true
 
   conv-relu-batchnorm-layer name=cnn1 $cnn_opts height-in=40 height-out=40 time-offsets=-1,0,1 height-offsets=-1,0,1 num-filters-out=64 learning-rate-factor=0.333 max-change=0.25
   conv-relu-batchnorm-layer name=cnn2 $cnn_opts height-in=40 height-out=40 time-offsets=-1,0,1 height-offsets=-1,0,1 num-filters-out=64

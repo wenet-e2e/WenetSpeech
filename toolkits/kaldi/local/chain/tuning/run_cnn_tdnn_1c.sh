@@ -3,10 +3,8 @@
 #                 Mobvoi Inc (Author: Binbin Zhang)
 # Apache 2.0
 
-# This script is copied from mini_librispeech/s5
-
-# To accommodate with the setups of other toolkits, we give up the techniques
-# about SpecAug and Ivector in this script.
+# 1c is as 1a, but we use the techniques about SpecAug and Ivector in this
+# script.
 
 # Set -e here so that we catch if any executable fails immediately
 set -euo pipefail
@@ -16,13 +14,13 @@ set -euo pipefail
 stage=0
 train_nj=50
 decode_nj=50
-train_set="train_l"
+train_set=
 gmm=tri3b
 nnet3_affix=_cleaned
 
 # The rest are configs specific to this script.  Most of the parameters
 # are just hardcoded at this level, in the commands below.
-affix=_1a   # affix for the TDNN directory name
+affix=_1c   # affix for the TDNN directory name
 tree_affix=
 train_stage=-10
 get_egs_stage=-10
@@ -62,24 +60,14 @@ where "nvcc" is installed.
 EOF
 fi
 
-# We don't conduct the techniques about SpecAug and Ivector.
-# To accommodate with Kaldi's customary nomenclature, we masquerade the
-# 'train_set' as the 'train_set_sp' dataset.
-
-# Prepare the hires mfcc features and alignment.
-if [ $stage -le 10 ]; then
-  ln -sf $train_set data/${train_set}_sp
-  for part in ${train_set}_sp $test_sets; do
-    utils/copy_data_dir.sh data/$part data/${part}_hires
-    steps/make_mfcc.sh --nj $train_nj --mfcc-config conf/mfcc_hires.conf \
-      --cmd "$train_cmd" data/${part}_hires || exit 1;
-    steps/compute_cmvn_stats.sh data/${part}_hires || exit 1;
-    utils/fix_data_dir.sh data/${part}_hires
-  done
-  steps/align_fmllr.sh --stage 0 --nj $train_nj --cmd "$train_cmd" \
-    data/${train_set}_sp data/lang exp/${train_set}/$gmm \
-    exp/${train_set}/${gmm}_ali_${train_set}_sp
-fi
+# The iVector-extraction and feature-dumping parts are the same as the standard
+# nnet3 setup, and you can skip them by setting "--stage 11" if you have already
+# run those things.
+local/chain/run_ivector_common.sh --stage $stage \
+                                  --train-set $train_set \
+                                  --test-sets "$test_sets" \
+                                  --gmm $train_set/$gmm \
+                                  --nnet3-affix "$nnet3_affix" || exit 1;
 
 
 gmm_dir=exp/${train_set}/$gmm
@@ -90,6 +78,7 @@ lat_dir=exp/${train_set}/chain${nnet3_affix}/${gmm}_${train_set}_sp_lats
 dir=exp/${train_set}/chain${nnet3_affix}/cnn_tdnn${affix}_sp
 train_data_dir=data/${train_set}_sp_hires
 lores_train_data_dir=data/${train_set}_sp
+train_ivector_dir=exp/${train_set}/nnet3${nnet3_affix}/ivectors_${train_set}_sp_hires
 
 for f in $gmm_dir/final.mdl $train_data_dir/feats.scp \
     $lores_train_data_dir/feats.scp $ali_dir/ali.1.gz; do
@@ -123,12 +112,18 @@ if [ $stage -le 14 ]; then
   mkdir -p $dir/configs
   cat <<EOF > $dir/configs/network.xconfig
   input dim=40 name=input
+  input dim=100 name=ivector
 
   # this takes the MFCCs and generates filterbank coefficients.  The MFCCs
   # are more compressible so we prefer to dump the MFCCs to disk rather
   # than filterbanks.
+  linear-component name=ivector-linear $ivector_affine_opts dim=200 input=ReplaceIndex(ivector, t, 0)
+  batchnorm-component name=ivector-batchnorm target-rms=0.025
+
   idct-layer name=idct input=input dim=40 cepstral-lifter=22 affine-transform-file=$dir/configs/idct.mat
   batchnorm-component name=idct-batchnorm input=idct
+  spec-augment-layer name=spec-augment freq-max-proportion=0.5 time-zeroed-proportion=0.2 time-mask-max-frames=20
+  combine-feature-maps-layer name=combine_inputs input=Append(spec-augment, ivector-batchnorm) num-filters1=1 num-filters2=5 height=40
 
   conv-relu-batchnorm-layer name=cnn1 $cnn_opts height-in=40 height-out=40 time-offsets=-1,0,1 height-offsets=-1,0,1 num-filters-out=64 learning-rate-factor=0.333 max-change=0.25
   conv-relu-batchnorm-layer name=cnn2 $cnn_opts height-in=40 height-out=40 time-offsets=-1,0,1 height-offsets=-1,0,1 num-filters-out=64
@@ -171,6 +166,7 @@ fi
 if [ $stage -le 15 ]; then
   steps/nnet3/chain/train.py --stage=$train_stage \
     --cmd="$train_cmd" \
+    --feat.online-ivector-dir="$train_ivector_dir" \
     --feat.cmvn-opts="--norm-means=false --norm-vars=false" \
     --chain.xent-regularize $xent_regularize \
     --chain.leaky-hmm-coefficient=0.1 \
@@ -219,8 +215,9 @@ if [ $stage -le 17 ]; then
       (
       steps/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
           --nj $decode_nj --cmd "$decode_cmd" $iter_opts \
+          --online-ivector-dir exp/${train_set}/nnet3${nnet3_affix}/ivectors_${part_set}_hires \
           $graph_dir data/${part_set}_hires $dir/decode_${part_set}${decode_iter:+_$decode_iter} || exit 1
-      ) || touch $dir/.error &
+      ) || touch $dir/.error
   done
   wait
   if [ -f $dir/.error ]; then

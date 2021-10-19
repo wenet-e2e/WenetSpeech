@@ -11,10 +11,10 @@ set -o pipefail
 
 
 # ---- Configurations ----
-stage=6
+stage=0
 
 wenetspeech_root=/home/work_nfs4_ssd/zhyyao/corpus/wenetspeech
-wenetspeech_train_subset_identifier=S  # L|M|S|W represents the
+wenetspeech_train_subset_identifier=L  # L|M|S|W represents the
                                        # large|med|small size for strong
                                        # label data and weak label data
 
@@ -27,6 +27,9 @@ done
 # We assume only one 'train_subset' is specified.
 # convert uppercase to lowercase
 wenetspeech_train_set="train_${wenetspeech_train_subset_identifier,,?}"
+
+# For aishell1, it has 20 speakers, we prefer to test it separately with
+# local/wenetspeech_test_aishell.sh
 wenetspeech_test_sets="dev test_meeting test_net"
 
 train_nj=50
@@ -300,7 +303,6 @@ if [ $stage -le 12 ]; then
   }
 fi
 
-exit 0
 if [ $stage -le 13 ]; then
   local/chain/run_cnn_tdnn.sh \
     --stage 0 \

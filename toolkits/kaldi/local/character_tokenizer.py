@@ -1,7 +1,7 @@
 # Copyright 2021 ASLP, NWPU (Author: Hang Lyu)
 #
 # This script splits the Chinese words into character and keep the English
-# words for the MSE evalutaion.
+# words for the MER evalutaion.
 
 import sys
 import codecs
