@@ -9,7 +9,7 @@ set -o pipefail
 
 stage=0
 
-WENETSPEECH_RELEASE_URL=http://10.1.205.28:8000/
+WENETSPEECH_RELEASE_URL=https://wenet-1258344699.file.myqcloud.com/WenetSpeech/
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <wenetspeech-dataset-dir>"
@@ -144,7 +144,7 @@ fi
 # Download from list
 if [ $stage -le 2 ]; then
   echo "$0: Start to download WenetSpeech files(*.aes.tgz)"
-  grep -v '^#' metadata/test.list | (while read line; do
+  grep -v '^#' metadata/v1.list | (while read line; do
     download_object_from_release $line || exit 1;
   done) || exit 1;
 fi
@@ -152,7 +152,7 @@ fi
 # Process data
 if [ $stage -le 4 ]; then
   echo "$0: Start to process the downloaded files(*.aes.tgz)"
-  grep -v '^#' metadata/test.list | (while read line; do
+  grep -v '^#' metadata/v1.list | (while read line; do
     process_downloaded_object $line || exit 1;
   done) || exit 1;
 fi
