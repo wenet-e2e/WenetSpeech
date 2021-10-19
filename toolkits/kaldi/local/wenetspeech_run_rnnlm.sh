@@ -32,7 +32,7 @@ run_lat_rescore=true
 decode_dir_suffix=rnnlm
 ngram_order=4 # approximate the lattice-rescoring by limiting the max-ngram-order
               # if it's set, it merges histories in the lattice if they share
-              # the same ngram history and this prevents the lattice from 
+              # the same ngram history and this prevents the lattice from
               # exploding exponentially
 pruned_rescore=true
 
