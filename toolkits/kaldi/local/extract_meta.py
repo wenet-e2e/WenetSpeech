@@ -1,5 +1,6 @@
 # Copyright 2021  Xiaomi Corporation (Author: Yongqing Wang)
-#                 Mobvoi Inc(Author: Di Wu, Binbin Zhang)
+#                 Mobvoi Inc (Author: Di Wu, Binbin Zhang)
+#                 ASLP@NWPU (Author: Hang Lyu)
 
 import sys
 import os
