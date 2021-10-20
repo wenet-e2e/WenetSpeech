@@ -11,18 +11,20 @@ stage=0
 
 WENETSPEECH_RELEASE_URL=https://wenet-1258344699.file.myqcloud.com/WenetSpeech/
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <wenetspeech-dataset-dir>"
-  echo " e.g.: $0 /disk1/audio_data/wenetspeech"
+if [ $# -ne 2 ]; then
+  echo "Usage: $0 <download-dir> <untar-dir>"
+  echo " e.g.: $0 /disk1/audio_data/wenetspeech_download /disk1/audio_data/wenetspeech_untar"
   echo ""
-  echo "We suggest having at least 1.0T of free space in the target"
-  echo "directory. If dataset resources are updated, you can re-run this"
-  echo "script for incremental download."
+  echo "We suggest having at least 500G of free space for the download and untar"
+  echo "directory, respectively. If dataset resources are updated, "
+  echo "you can re-run this script for incremental download."
   exit 1
 fi
 
-wenetspeech_dataset_dir=$1
-mkdir -p $wenetspeech_dataset_dir || exit 1;
+download_dir=$(realpath $1)
+untar_dir=$(realpath $2)
+mkdir -p $download_dir || exit 1;
+mkdir -p $untar_dir || exit 1;
 
 # Check operating system
 if [ `uname -s` != 'Linux' ] && [ `uname -s` != 'Darwin' ]; then
@@ -76,7 +78,7 @@ download_object_from_release() {
   echo "$0: Downloading $obj remote_md5=$remote_md5"
 
   local remote_obj=${WENETSPEECH_RELEASE_URL}/$obj
-  local local_obj=${wenetspeech_dataset_dir}/$obj
+  local local_obj=${download_dir}/$obj
 
   local location=$(dirname $local_obj)
   mkdir -p $location || exit 1;
@@ -108,20 +110,16 @@ download_object_from_release() {
 process_downloaded_object() {
   local obj=$2
   echo "$0: Processing $obj"
-  local path=${wenetspeech_dataset_dir}/$obj
-  local location=$(dirname $path)
-
-  pushd $wenetspeech_dataset_dir
+  local path=${download_dir}/$obj
   openssl aes-256-cbc -d -salt -pass pass:$PASSWORD -pbkdf2 -in $path | \
-    tar xzf - || exit 1;
-  popd
+    tar xzf - -C $untar_dir || exit 1;
 }
 
 
 # User agreement
 if [ $stage -le 0 ]; then
   echo "$0: Start to download WenetSpeech user agreement"
-  wget -c -P $wenetspeech_dataset_dir \
+  wget -c -P $download_dir \
     ${WENETSPEECH_RELEASE_URL}/TERMS_OF_ACCESS || exit 1;
   GREEN='\033[0;32m'
   NC='\033[0m'       # No Color
@@ -129,7 +127,7 @@ if [ $stage -le 0 ]; then
   echo -e "BY PROCEEDING YOU AGREE TO THE FOLLOWING WENETSPEECH TERMS OF ACCESS:"
   echo -e ""
   echo -e "=============== WENETSPEECH DATASET TERMS OF ACCESS ==============="
-  cat $wenetspeech_dataset_dir/TERMS_OF_ACCESS
+  cat $download_dir/TERMS_OF_ACCESS
   echo -e "=================================================================="
   echo -e "$0: WenetSpeech downloading will start in 5 seconds"
   echo -e ""
@@ -152,6 +150,7 @@ fi
 # Process data
 if [ $stage -le 4 ]; then
   echo "$0: Start to process the downloaded files(*.aes.tgz)"
+  cp $download_dir/TERMS_OF_ACCESS $untar_dir
   grep -v '^#' metadata/v1.list | (while read line; do
     process_downloaded_object $line || exit 1;
   done) || exit 1;
