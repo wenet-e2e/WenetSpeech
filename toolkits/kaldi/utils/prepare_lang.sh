@@ -299,11 +299,11 @@ ndisambig=$[$ndisambig+$num_extra_phone_disambig_syms]; # add (at least) one dis
 echo $ndisambig > $tmpdir/lex_ndisambig
 
 # Format of lexiconp_disambig.txt:
-# !SIL	1.0   SIL_S
-# <SPOKEN_NOISE>	1.0   SPN_S #1
-# <UNK>	1.0  SPN_S #2
-# <NOISE>	1.0  NSN_S
-# !EXCLAMATION-POINT	1.0  EH2_B K_I S_I K_I L_I AH0_I M_I EY1_I SH_I AH0_I N_I P_I OY2_I N_I T_E
+# !SIL  1.0  SIL_S
+# <SPOKEN_NOISE>  1.0  SPN_S #1
+# <UNK>  1.0  SPN_S #2
+# <NOISE>  1.0  NSN_S
+# !EXCLAMATION-POINT  1.0  EH2_B K_I S_I K_I L_I AH0_I M_I EY1_I SH_I AH0_I N_I P_I OY2_I N_I T_E
 
 ( for n in `seq 0 $ndisambig`; do echo '#'$n; done ) >$dir/phones/disambig.txt
 
