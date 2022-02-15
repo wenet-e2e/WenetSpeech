@@ -9,7 +9,7 @@ set -o pipefail
 
 stage=0
 
-WENETSPEECH_RELEASE_URL=https:/wenet-sh-1258344699.file.myqcloud.com/WenetSpeech/
+WENETSPEECH_RELEASE_URL=http://wenet.meeting.tencent.com/WenetSpeech/
 
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <download-dir> <untar-dir>"
