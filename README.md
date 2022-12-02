@@ -11,8 +11,37 @@ A 10000+ Hours Multi-domain Chinese Corpus for Speech Recognition
 ## Download
 
 Please visit the [official website](https://wenet-e2e.github.io/WenetSpeech/),
-read the license, and follow the instruction to download the data.
+read the license, and follow the instruction to apply for the `PASSWORD` to download the data.
 
+``` bash
+echo 'PASSWORD' > SAFEBOX/password
+```
+
+### From Tecent Meeting (default)
+
+Download WenetSpeech:
+
+``` bash
+bash utils/download_wenetspeech.sh DOWNLOAD_DIR UNTAR_DIR
+```
+
+### From ModelScope
+
+Install `modelscope` (depends on `torch`) before downloading:
+
+``` bash
+conda create -n modelscope python=3.7
+conda activate modelscope
+pip install torch
+pip install modelscope -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
+```
+
+Download [WenetSpeech](https://modelscope.cn/datasets/wenet/WenetSpeech) from modelscope:
+
+``` bash
+sed -i 's/modelscope=false/modelscope=true/g' utils/download_wenetspeech.sh
+bash utils/download_wenetspeech.sh DOWNLOAD_DIR UNTAR_DIR
+```
 
 ## Benchmark
 
