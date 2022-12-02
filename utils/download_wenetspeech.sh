@@ -8,8 +8,8 @@ set -e
 set -o pipefail
 
 stage=0
-
-WENETSPEECH_RELEASE_URL=http://wenet.meeting.tencent.com/WenetSpeech/
+modelscope=false
+WENETSPEECH_RELEASE_URL=http://wenet.meeting.tencent.com/WenetSpeech
 
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <download-dir> <untar-dir>"
@@ -108,10 +108,9 @@ download_object_from_release() {
 }
 
 process_downloaded_object() {
-  local obj=$2
+  local obj=$1
   echo "$0: Processing $obj"
-  local path=${download_dir}/$obj
-  openssl aes-256-cbc -d -salt -pass pass:$PASSWORD -pbkdf2 -in $path | \
+  openssl aes-256-cbc -d -salt -pass pass:$PASSWORD -pbkdf2 -in $obj | \
     tar xzf - -C $untar_dir || exit 1;
 }
 
@@ -142,18 +141,29 @@ fi
 # Download from list
 if [ $stage -le 2 ]; then
   echo "$0: Start to download WenetSpeech files(*.aes.tgz)"
-  grep -v '^#' metadata/v1.list | (while read line; do
-    download_object_from_release $line || exit 1;
-  done) || exit 1;
+  if [ $modelscope == true ]; then
+    CACHE_HOME=$download_dir python utils/download_from_modelscope.py
+  else
+    grep -v '^#' metadata/v1.list | (while read line; do
+      download_object_from_release $line || exit 1;
+    done) || exit 1;
+  fi
 fi
 
 # Process data
-if [ $stage -le 4 ]; then
+if [ $stage -le 3 ]; then
   echo "$0: Start to process the downloaded files(*.aes.tgz)"
   cp $download_dir/TERMS_OF_ACCESS $untar_dir
-  grep -v '^#' metadata/v1.list | (while read line; do
-    process_downloaded_object $line || exit 1;
-  done) || exit 1;
+  if [ $modelscope == true ]; then
+    ms_download_dir=$download_dir/modelscope/hub/datasets/downloads/wenet/WenetSpeech/master
+    for tgz in `ls $ms_download_dir | grep -v '\.'`; do
+      process_downloaded_object ${ms_download_dir}/$tgz || exit 1;
+    done || exit 1;
+  else
+    grep -v '^#' metadata/v1.list | (while read md5 tgz; do
+      process_downloaded_object ${download_dir}/$tgz || exit 1;
+    done) || exit 1;
+  fi
 fi
 
 echo "$0: Done"
