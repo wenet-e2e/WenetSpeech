@@ -43,6 +43,16 @@ sed -i 's/modelscope=false/modelscope=true/g' utils/download_wenetspeech.sh
 bash utils/download_wenetspeech.sh DOWNLOAD_DIR UNTAR_DIR
 ```
 
+## Discussion & Communication
+
+Please scan the QR code on the left to follow our offical account of WeNet.
+We created a WeChat group for better discussion and quicker response.
+Please scan the personal QR code on the right, and the guy is responsible for inviting you to the chat group.
+
+| <img src="https://github.com/robin1001/qr/blob/master/wenet.jpeg" width="250px"> | <img src="https://github.com/wenet-e2e/wenet-contributors/blob/main/wenetspeech/lvhang.jpg" width="250px"> |
+| ---- | ---- |
+
+
 ## Benchmark
 
 | Toolkit | Dev  | Test\_Net | Test\_Meeting | AIShell-1 |
