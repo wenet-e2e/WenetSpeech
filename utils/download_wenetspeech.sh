@@ -155,7 +155,7 @@ if [ $stage -le 3 ]; then
   echo "$0: Start to process the downloaded files(*.aes.tgz)"
   cp $download_dir/TERMS_OF_ACCESS $untar_dir
   if [ $modelscope == true ]; then
-    ms_download_dir=$download_dir/modelscope/hub/datasets/downloads/wenet/WenetSpeech/master
+    ms_download_dir=$download_dir/modelscope/hub/datasets/wenet/WenetSpeech/master
     for tgz in `ls $ms_download_dir | grep -v '\.'`; do
       process_downloaded_object ${ms_download_dir}/$tgz || exit 1;
     done || exit 1;
