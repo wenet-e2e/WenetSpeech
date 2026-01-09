@@ -7,6 +7,10 @@ A 10000+ Hours Multi-domain Chinese Corpus for Speech Recognition
 
 ![WenetSpeech](res/wenetspeech.jpg)
 
+## News
+
+* 2026.01.09 - We find there are minor label errors in `TEST_NET` test set, and you can mannually fix it, see https://github.com/wenet-e2e/WenetSpeech/issues/63 for details.
+
 
 ## Download
 
